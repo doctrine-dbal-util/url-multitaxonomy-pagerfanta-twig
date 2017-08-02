@@ -1,0 +1,95 @@
+{% extends 'AppBundle:Default:base.html.twig' %}
+
+{% block body %}
+    <h1>Url</h1>
+
+    <table>
+        <tbody>
+            {# <tr>
+                <th>UUID</th>
+                <td>{{ uRL.uuid }}</td>
+            </tr>
+            #}
+            <tr>
+                <th>Url</th>
+                <td>{{ uRL.url }}</td>
+                <td><a href="{{ path('url_edit', { 'uuid': uRL.uuid }) }}"><button type="button">Edit</button></a></td>
+                <td><a href="{{ uRL.url }}">Visit</a></td>
+            </tr>
+        </tbody>
+    </table>
+
+        <ul>
+{% for term_row in model.getManyToManyTraversable('owned_url', 'uuid', 'owned_url_uuid', 'link_owned_url_taxonomy', 'taxonomy_uuid', 'uuid', 'taxonomy_leaf', {uuid: uRL.uuid}) %}
+            <li>
+            <ul>
+{% for term in model.getWhereAndTraversable('taxonomy_tree', {synonym_uuid: term_row['taxonomy_uuid']}) %}
+                <li>
+                    <a href="{{ path('taxonomy_show', {uuid: term['uuid']}) }}">{{ term['term'] }}</a>
+                    <form action={{ path('url_detach_taxonomy_term', { 'url_uuid': uRL.uuid, 'taxo_uuid': term.uuid}) }}  method="post"><input type="hidden" name="_method" value="DELETE"/><input type="submit" value="Detach term: {{ term.term }}"></form>
+                    {# SECURITY CSRF #}
+                </li>
+{% endfor %}
+            </ul>
+            </li>
+{% endfor %}
+            <li><a href="{{ path('url_attach_taxonomy_term_index', { 'uuid': uRL.uuid }) }}"><button type="button">Search and attach taxonomy term</button></a></li>
+        </ul>
+
+    <ul>
+        <li>
+            {{ form_start(delete_form) }}
+                <input type="submit" value="Delete Url">
+            {{ form_end(delete_form) }}
+        </li>
+        <li>
+            <a href="{{ path('url_index') }}">Back to the list</a>
+        </li>
+        <li>
+            <a href="{{ path('url_new') }}"><button type="button">Create a new uRL</button></a>
+        </li>
+    </ul>
+    <h2>Click on the folloing buttons to attach term</h2>
+    {{ pagerfanta(terms, 'default', { 'pageParameter': '[term_page]'}) }}
+    <ul>
+        {% for term in terms %}
+            {#
+            {% set form = taxonomy_form_object.create({'url_uuid': uRL.uuid, 'taxo_uuid': term.uuid}) %}
+            <li>
+            {{ form_start(form) }}
+                <input type="submit" value="{{ term.term }}">
+            {{ form_end(form) }}
+            </li>
+            {% set formc = controller.createAddGivenTaxonomyTermEmptyFormView({'url_uuid': uRL.uuid, 'taxo_uuid': term.uuid}) %}
+            <li>
+            {{ form_start(formc) }}
+                <input type="submit" value="{{ term.term }}">
+            {{ form_end(formc) }}
+            </li>
+            {% set formfb = fb.setAction(path('url_attach_taxonomy_term_leaf', {'url_uuid': uRL.uuid, 'taxo_uuid': term.uuid}), {'url_uuid': uRL.uuid, 'taxo_uuid': term.uuid}).getForm.createView %}
+            <li>
+            {{ form_start(formfb) }}
+                <input type="submit" value="{{ term.term }}">
+            {{ form_end(formfb) }}
+            </li>
+            {% set fbform = ff.createBuilder('Symfony\\Component\\Form\\Extension\\Core\\Type\\FormType').add(term.term, 'Symfony\\Component\\Form\\Extension\\Core\\Type\\SubmitType').setAction(path('url_attach_taxonomy_term_leaf', {'url_uuid': uRL.uuid, 'taxo_uuid': term.uuid}), {'url_uuid': uRL.uuid, 'taxo_uuid': term.uuid}).getForm.createView %}
+            <li>
+            {{ form(fbform) }}
+            </li>
+            #}
+            <li>
+            {{ form(ff
+                .createBuilder()
+                .add(term.term, 'Symfony\\Component\\Form\\Extension\\Core\\Type\\SubmitType')
+                .setAction(
+                    path('url_attach_taxonomy_term_leaf', {'owned_url_uuid': uRL.uuid, 'taxo_uuid': term.uuid}), 
+                    {'url_uuid': uRL.uuid, 'taxo_uuid': term.uuid}
+                )
+                .getForm.createView
+            )}}
+            </li>
+            {# fb.add is repeated additively at each iteration, builder factory is used to avoid this. #}
+        {% endfor %}
+    </ul>
+    {{ pagerfanta(terms, 'default', { 'pageParameter': '[term_page]'}) }}
+{% endblock %}
