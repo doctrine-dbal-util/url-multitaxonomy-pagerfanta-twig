@@ -1,0 +1,34 @@
+{# extends 'base.html.twig' #}
+
+{% block body %}
+    <h1>Url</h1>
+
+    <table>
+        <tbody>
+            <tr>
+                <th>UUID</th>
+                <td>{{ uRL.uuid }}</td>
+            </tr>
+            <tr>
+                <th>Url</th>
+                <td>{{ uRL.url }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+        <ul>
+{% for term_row in model.getManyToManyTraversable('owned_url', 'uuid', 'url_uuid', 'link_owned_url_taxonomy', 'taxonomy_uuid', 'uuid', 'taxonomy_leaf', {uuid: uRL.uuid}) %}
+            <li>
+            <ul>
+{% for term in model.getWhereAndTraversable('taxonomy_tree', {synonym_uuid: term_row['taxonomy_uuid']}) %}
+                <li>{{ term.term }}</li>
+{% endfor %}
+            </ul>
+            </li>
+{% endfor %}
+            {{ form_start(taxonomy_form) }}
+                <input type="submit" value="Attach a taxonomy term">
+                <a href="{{ path('url_show', { 'uuid': uRL.uuid }) }}"><button type="button">Cancel and go to term page</button></a>
+            {{ form_end(taxonomy_form) }}
+        </ul>
+{% endblock %}
