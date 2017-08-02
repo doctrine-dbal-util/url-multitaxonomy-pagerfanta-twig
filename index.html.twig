@@ -1,0 +1,45 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Urls list</h1>
+    ({{ uRLs.getNbResults() }}, {{ uRLs.getNbPages() }})
+    {{ pagerfanta(uRLs, 'default') }}
+    <table>
+        <thead>
+            <tr>
+                {#<th>UUID</th>#}
+                <th>Url</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for uRL in uRLs.getCurrentPageResults %}
+            <tr>
+                {#<td><a href="{{ path('url_show', { 'uuid': uRL.uuid }) }}">{{ uRL.uuid }}</a></td>#}
+                <td>{{ uRL.url }}</td>
+                <td>
+                            <a href="{{ path('url_show', { 'uuid': uRL.uuid }) }}">show</a>
+                            <a href="{{ path('url_edit', { 'uuid': uRL.uuid }) }}">edit</a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {{ pagerfanta(uRLs, 'default') }}
+
+    <ul>
+        <li>
+            <a href="{{ path('url_new') }}">Create a new uRL</a>
+        </li>
+    </ul>
+{% endblock body%}
+
+{#
+    <p>
+        <a href="{{ path('url_index') }}">first</a>
+        {% if uRLs.hasPreviousPage %}<a href="{{ path('url_index', { 'page': uRLs.getPreviousPage }) }}">previous</a>{% endif %}
+        {{ uRLs.getCurrentPage }}
+        {% if uRLs.hasNextPage %}<a href="{{ path('url_index', { 'page': uRLs.getNextPage }) }}">next</a>{% endif %}
+        <a href="{{ path('url_index', { 'page': uRLs.getNbPages }) }}">last</a>
+    </p>
+#}
